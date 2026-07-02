@@ -1,0 +1,105 @@
+/* Ticketfasta Mailcow UI — edit freely, deploy with ./deploy.sh */
+
+:root {
+  --tf-primary: #0F4D8D;
+  --tf-accent: #DC143C;
+  --tf-white: #FFFFFF;
+  --tf-tera-blue: #2f78dd;
+  --tf-tera-navy: #183b63;
+}
+
+/* Login page — BPM-inspired background */
+body.tf-login-page,
+body:has(.tf-powered-by) {
+  background:
+    radial-gradient(circle at 10% 14%, rgba(115, 184, 255, 0.36), transparent 24%),
+    radial-gradient(circle at 86% 16%, rgba(70, 135, 240, 0.28), transparent 22%),
+    linear-gradient(135deg, #edf4fb 0%, #f7fbff 48%, #eaf3ff 100%);
+}
+
+.tf-login-card,
+body:has(.tf-powered-by) .card {
+  border: 1px solid #d7e5f4;
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 30px 80px rgba(18, 58, 99, 0.16);
+}
+
+/* TERA powered-by badge (matches BPM login) */
+.tf-powered-by {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.tf-powered-by__logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 4.5rem;
+  width: 4.5rem;
+  border-radius: 1.4rem;
+  background-image: radial-gradient(rgba(47, 120, 221, 0.92) 1px, transparent 1px);
+  background-size: 9px 9px;
+}
+
+.tf-powered-by__logo img {
+  height: 2.25rem;
+  width: auto;
+}
+
+.tf-powered-by__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #2d6aaf;
+}
+
+.tf-powered-by__text {
+  font-size: 0.85rem;
+  color: #68839f;
+}
+
+.tf-powered-by__text strong {
+  color: var(--tf-tera-navy);
+  font-weight: 700;
+}
+
+.tf-footer-credit {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: #7b93aa;
+}
+
+.navbar.bg-primary,
+.btn-primary,
+.btn-success {
+  background-color: var(--tf-primary) !important;
+  border-color: var(--tf-primary) !important;
+}
+
+.btn-primary:hover,
+.btn-success:hover {
+  background-color: var(--tf-accent) !important;
+  border-color: var(--tf-accent) !important;
+}
+
+a,
+.nav-link {
+  color: var(--tf-primary);
+}
+
+a:hover {
+  color: var(--tf-accent);
+}
+
+.card-header {
+  border-bottom: 2px solid var(--tf-accent);
+}
+
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}

@@ -1,0 +1,63 @@
+.tf-login-page {
+  position: relative;
+  background:
+    radial-gradient(circle at 10% 14%, rgba(115, 184, 255, 0.36), transparent 24%),
+    radial-gradient(circle at 86% 16%, rgba(70, 135, 240, 0.28), transparent 22%),
+    radial-gradient(circle at 74% 72%, rgba(48, 196, 227, 0.16), transparent 20%),
+    linear-gradient(135deg, #edf4fb 0%, #f7fbff 48%, #eaf3ff 100%);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  overflow-x: hidden;
+}
+
+.tf-login-page__orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(28px);
+  pointer-events: none;
+}
+
+.tf-login-page__orb--left {
+  left: -3rem;
+  top: 3rem;
+  height: 13rem;
+  width: 13rem;
+  background: rgba(94, 163, 245, 0.28);
+}
+
+.tf-login-page__orb--right {
+  right: -2rem;
+  top: 7rem;
+  height: 11rem;
+  width: 11rem;
+  background: rgba(62, 123, 232, 0.2);
+}
+
+.tf-login-page__dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.42;
+  background-image: radial-gradient(rgba(43, 116, 215, 0.85) 1px, transparent 1px);
+  background-size: 18px 18px;
+  mask-image: linear-gradient(135deg, transparent 8%, rgba(0, 0, 0, 0.85) 44%, transparent 84%);
+}
+
+.preview-wrap {
+  position: relative;
+  z-index: 1;
+  margin-top: 40px;
+}
+
+.tf-login-card {
+  border: 1px solid #d7e5f4;
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 30px 80px rgba(18, 58, 99, 0.16);
+}
+
+legend {
+  font-weight: 600;
+  color: #183b63;
+}
