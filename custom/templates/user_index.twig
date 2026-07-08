@@ -3,10 +3,13 @@
 {% block navbar %}{% endblock %}
 
 {% block content %}
-<div class="row mb-4" style="margin-top: 60px">
+<div class="tf-login-page__orb tf-login-page__orb--left" aria-hidden="true"></div>
+<div class="tf-login-page__orb tf-login-page__orb--right" aria-hidden="true"></div>
+<div class="tf-login-page__dots" aria-hidden="true"></div>
+<div class="row mb-4 preview-wrap" style="margin-top: 60px">
   <div class="col-12 col-md-7 col-lg-6 col-xl-5 ms-auto me-auto">
 
-    <div class="card">
+    <div class="card tf-login-card">
       <div class="card-header d-flex align-items-center text-break">
         <i class="bi bi-person-fill me-2"></i> {{ lang.login.login_user }}
         <div class="ms-auto form-check form-switch my-auto d-flex align-items-center">
@@ -38,7 +41,7 @@
 
         <div class="tf-powered-by text-center mb-4">
           <div class="tf-powered-by__logo mx-auto">
-            <img src="/img/tera-logo.png" alt="TERA" height="36">
+            <img src="/img/tera-logo.png" alt="TERA" height="36" width="120" decoding="async" fetchpriority="high">
           </div>
           <p class="tf-powered-by__label mb-0">Ticketfasta Mail</p>
           <p class="tf-powered-by__text mb-0">Ticketfasta is powered by <strong>TERA</strong></p>
