@@ -11,10 +11,23 @@
 /* Login page — BPM-inspired background */
 body.tf-login-page,
 body:has(.tf-powered-by) {
+  position: relative;
   background:
     radial-gradient(circle at 10% 14%, rgba(115, 184, 255, 0.36), transparent 24%),
     radial-gradient(circle at 86% 16%, rgba(70, 135, 240, 0.28), transparent 22%),
+    radial-gradient(circle at 74% 72%, rgba(48, 196, 227, 0.16), transparent 20%),
     linear-gradient(135deg, #edf4fb 0%, #f7fbff 48%, #eaf3ff 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body:has(.tf-powered-by) .mailcow-logo {
+  display: none;
+}
+
+body:has(.tf-powered-by) .container.flex-grow-1 {
+  position: relative;
+  z-index: 1;
 }
 
 .tf-login-card,
