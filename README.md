@@ -1,34 +1,12 @@
-# Ticketfasta Mail — Local UI Customization
+# Ticketfasta Mail
 
-Customize the mail login page and webmail theme **on your Mac without Docker**.
+Customize the Mailcow login page and webmail theme, deploy to **mail.ticketfasta.co.tz**.
 
-## Folder structure
-
-```
-ticketfasta-mail-platform/
-├── _upstream/              # Mailcow source (templates, CSS) — read-only reference
-│   └── data/web/templates/ # Real Twig pages (user_index.twig = login)
-├── branding/               # YOUR edits — deploy these to the server
-│   ├── mailcow-ui/
-│   │   ├── custom.css      # Colors, buttons, fonts
-│   │   └── branding.env    # Title, footer text
-│   └── sogo/
-│       ├── custom-fulllogo.svg
-│       ├── custom-shortlogo.svg
-│       └── custom-theme.js # Webmail colors
-├── custom/                 # Optional advanced overrides
-│   ├── templates/          # Copy Twig files here to override on server
-│   └── css/
-├── preview/
-│   └── login.html          # Static local preview of login page
-└── scripts/
-    ├── preview.sh          # Run local preview server
-    └── deploy.sh           # Push to live server
-```
+**Git:** `git@github.com:Barakael/mail.git`
 
 ## Quick start
 
-### 1. Preview locally (no Docker)
+### Preview locally (no Docker)
 
 ```bash
 cd ~/ticketfasta-mail-platform
@@ -38,15 +16,42 @@ chmod +x scripts/*.sh
 
 Open **http://localhost:8765/preview/login.html**
 
-Edit `branding/mailcow-ui/custom.css` or SVG logos → refresh browser.
-
-### 2. Deploy to live server
+### Deploy branding to live server
 
 ```bash
 ./scripts/deploy.sh
 ```
 
-Then visit https://mail.ticketfasta.co.tz (Cmd+Shift+R to hard refresh).
+Then hard-refresh https://mail.ticketfasta.co.tz (Cmd+Shift+R).
+
+### Verify DNS and HTTPS
+
+```bash
+./scripts/verify-mail.sh
+```
+
+## Documentation
+
+| Doc | Purpose |
+|-----|---------|
+| [docs/OPERATIONS.md](docs/OPERATIONS.md) | Server access, deploy, password reset, container health |
+| [docs/MAILBOX_SETUP.md](docs/MAILBOX_SETUP.md) | `info@ticketfasta.co.tz` client settings and troubleshooting |
+| [docs/DNS_RECORDS.md](docs/DNS_RECORDS.md) | SPF, DKIM, DMARC, PTR records to publish |
+
+## Folder structure
+
+```
+ticketfasta-mail-platform/
+├── branding/           # Logos, CSS, UI text — deployed to server
+├── custom/templates/   # Twig overrides (login page, Tera branding)
+├── preview/            # Static local preview
+├── scripts/
+│   ├── deploy.sh       # Push branding to 161.97.182.204
+│   ├── preview.sh      # Local HTTP preview server
+│   └── verify-mail.sh  # DNS/HTTPS checks
+├── docs/               # Operations and DNS guides
+└── _upstream/          # Mailcow reference (not in git)
+```
 
 ## What to edit
 
@@ -56,17 +61,21 @@ Then visit https://mail.ticketfasta.co.tz (Cmd+Shift+R to hard refresh).
 | Company name & footer | `branding/mailcow-ui/branding.env` |
 | Logo | `branding/sogo/custom-fulllogo.svg` |
 | Webmail theme | `branding/sogo/custom-theme.js` |
-| Login page HTML structure | Copy `_upstream/data/web/templates/user_index.twig` → `custom/templates/` |
+| Login page HTML | `custom/templates/user_index.twig` |
 
-## Why not full Mailcow locally?
+## Mailbox login
 
-The full mail system (Postfix, Dovecot, DB) needs Docker on the server. For **design work**, you only need:
+- **URL:** https://mail.ticketfasta.co.tz/
+- **Username:** `info@ticketfasta.co.tz` (full email)
+- **Password:** set on server — see [docs/OPERATIONS.md](docs/OPERATIONS.md)
 
-- **Preview** = static HTML + your CSS/logo (this repo)
-- **Reference** = real Mailcow Twig/CSS in `_upstream/`
-- **Deploy** = push branding to `161.97.182.204`
+## What this repo does *not* do
 
-## Update upstream reference
+- Create mailboxes (use Mailcow admin at `/admin`)
+- Edit DNS (use your registrar — see [docs/DNS_RECORDS.md](docs/DNS_RECORDS.md))
+- Store passwords or API keys (server only: `/root/mailcow-credentials.txt`)
+
+## Update upstream Mailcow reference
 
 ```bash
 cd _upstream && git pull
