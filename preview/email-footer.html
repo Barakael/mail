@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TERA Email Footer — Preview</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: #f0f4f8;
+      color: #183b63;
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+    }
+    .meta {
+      font-size: 0.875rem;
+      color: #5a7a96;
+      margin-bottom: 1.5rem;
+    }
+    .sample-email {
+      background: #fff;
+      border: 1px solid #d7e5f4;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 24px rgba(18, 58, 99, 0.08);
+    }
+    .sample-body {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #333;
+      margin-bottom: 0;
+    }
+    .footer-frame {
+      margin-top: 1rem;
+      max-width: 600px;
+    }
+    .ruler {
+      margin: 2rem 0 1rem;
+      padding: 0.75rem 1rem;
+      background: #fff;
+      border: 1px dashed #DC143C;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      color: #5a7a96;
+    }
+    .ruler strong { color: #183b63; }
+    a.back { color: #0F4D8D; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>TERA Corporate Email Footer</h1>
+    <p class="meta">
+      Single-row layout, target height ~1.5&nbsp;in (108px). Production HTML uses <code>cid:tera-logo</code>; preview uses hosted logo path.
+    </p>
+    <p><a class="back" href="login.html">&larr; Back to login preview</a></p>
+
+    <div class="ruler">
+      Target height: <strong>~108px (1.5 inch)</strong> &middot; Max width: <strong>600px</strong>
+    </div>
+
+    <div class="sample-email">
+      <p class="sample-body">
+        Dear Customer,<br><br>
+        Thank you for your inquiry. Please find the requested information attached.<br><br>
+        Kind regards,<br>
+        Tera Technologies and Engineering Limited
+      </p>
+
+      <div class="footer-frame" id="footer-preview"></div>
+    </div>
+  </div>
+
+  <script>
+    fetch('../branding/email/corporate-footer.html')
+      .then(function (r) { return r.text(); })
+      .then(function (html) {
+        html = html.replace('src="cid:tera-logo"', 'src="../branding/mailcow-ui/tera-logo.png"');
+        document.getElementById('footer-preview').innerHTML = html;
+      })
+      .catch(function () {
+        document.getElementById('footer-preview').innerHTML =
+          '<p style="color:#DC143C;">Could not load footer HTML. Run preview from repo root via <code>./scripts/preview.sh</code>.</p>';
+      });
+  </script>
+</body>
+</html>
