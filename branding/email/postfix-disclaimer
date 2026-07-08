@@ -1,0 +1,49 @@
+#!/bin/bash
+# Postfix content-filter script for alterMIME corporate footer.
+# Installed on server as /opt/postfix/conf/disclaimer/disclaimer
+# Invoked by master.cf content_filter=dfilt:
+#
+#   dfilt unix - n n - - pipe
+#       flags=Rq user=filter argv=/opt/postfix/conf/disclaimer/disclaimer -f ${sender} -- ${recipient}
+
+set -euo pipefail
+
+SENDMAIL="/usr/sbin/sendmail"
+DISCLAIMER_DIR="/opt/postfix/conf/disclaimer"
+DISCLAIMER_HTML="${DISCLAIMER_DIR}/corporate-footer.html"
+DISCLAIMER_TXT="${DISCLAIMER_DIR}/corporate-footer.txt"
+INPUT="in.$$"
+
+SENDER="${2:-}"
+shift 3
+
+cat >"${INPUT}"
+
+# Only append for outbound mail from company domains
+case "$SENDER" in
+  *@ticketfasta.co.tz|*@teratech.co.tz) ;;
+  *)
+    "${SENDMAIL}" -G -i "$@"
+    rm -f "${INPUT}"
+    exit 0
+    ;;
+esac
+
+# Skip auto-generated mail
+if grep -qiE '^(Precedence: (bulk|junk|list)|Auto-Submitted: auto-replied|List-Unsubscribe:)' "${INPUT}"; then
+  "${SENDMAIL}" -G -i "$@"
+  rm -f "${INPUT}"
+  exit 0
+fi
+
+/usr/bin/altermime --input="${INPUT}" \
+  --disclaimer="${DISCLAIMER_TXT}" \
+  --disclaimer-html="${DISCLAIMER_HTML}" \
+  --xheader="X-Corporate-Footer: TERA" || {
+    echo "Message content rejected"
+    rm -f "${INPUT}"
+    exit 75
+  }
+
+"${SENDMAIL}" -G -i "$@"
+rm -f "${INPUT}"

@@ -37,6 +37,7 @@ Then hard-refresh https://mail.ticketfasta.co.tz (Cmd+Shift+R).
 | [docs/OPERATIONS.md](docs/OPERATIONS.md) | Server access, deploy, password reset, container health |
 | [docs/MAILBOX_SETUP.md](docs/MAILBOX_SETUP.md) | `info@ticketfasta.co.tz` client settings and troubleshooting |
 | [docs/DNS_RECORDS.md](docs/DNS_RECORDS.md) | SPF, DKIM, DMARC, PTR records to publish |
+| [docs/EMAIL_FOOTER.md](docs/EMAIL_FOOTER.md) | Universal TERA corporate email footer |
 
 ## Folder structure
 
@@ -62,6 +63,7 @@ ticketfasta-mail-platform/
 | Logo | `branding/sogo/custom-fulllogo.svg` |
 | Webmail theme | `branding/sogo/custom-theme.js` |
 | Login page HTML | `custom/templates/user_index.twig` |
+| Corporate email footer | `branding/email/corporate-footer.html` |
 
 ## Mailbox login
 
