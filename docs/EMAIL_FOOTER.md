@@ -1,37 +1,62 @@
 # TERA Corporate Email Footer
 
-Universal HTML footer appended to every outgoing email from `@ticketfasta.co.tz` and `@teratech.co.tz` mailboxes.
+Universal footer appended to every outgoing email from `@ticketfasta.co.tz` and
+`@teratech.co.tz`. It is applied at the mail-transfer level, so it is identical
+for every sender and every mail client (SOGo, Outlook, phones).
+
+Status: **live** on `mail.ticketfasta.co.tz`.
 
 ## Files
 
 | File | Purpose |
 |------|---------|
+| [`branding/email/footer-filter.py`](../branding/email/footer-filter.py) | Postfix content filter that appends the footer (DKIM-safe) |
 | [`branding/email/corporate-footer.html`](../branding/email/corporate-footer.html) | HTML snippet (table layout, inline CSS) |
 | [`branding/email/corporate-footer.txt`](../branding/email/corporate-footer.txt) | Plain-text fallback for multipart messages |
-| [`branding/email/postfix-disclaimer`](../branding/email/postfix-disclaimer) | Postfix pipe script for alterMIME |
 | [`preview/email-footer.html`](../preview/email-footer.html) | Local browser preview |
+| [`scripts/deploy-email-footer.sh`](../scripts/deploy-email-footer.sh) | Sync footer assets to the server |
 
 ## Design spec
 
-- **Layout:** Single horizontal row, five columns (logo, company, locations, contact, badge + copyright)
-- **Height:** ~108px (1.5 inch) at typical email zoom
-- **Width:** 600px max
-- **Colors:** Navy `#183b63`, accent red `#DC143C`, white text
-- **Logo:** CID `tera-logo` in production HTML (embedded by alterMIME or inline attachment)
+- Single horizontal row, five columns (logo, company, locations, contact, badge + copyright)
+- Target height ~108px (1.5 inch), max width 600px
+- Colors: navy `#183b63`, accent red `#DC143C`, white text
+- Logo loaded from `https://mail.ticketfasta.co.tz/img/tera-logo.png` (deployed by `scripts/deploy.sh`)
 
-### Content included
+Content: company name, slogan (Speed, Quality and Integrity), HQ + condensed
+offices, corporate contact, "Official Company Communication" badge, copyright.
+Excludes all personal/employee elements (name, title, personal phone/email,
+photo, QR, vCard, social, meeting buttons).
 
-- Tera Technologies and Engineering Limited
-- Slogan: Speed, Quality and Integrity
-- HQ: Mbezi Beach, Dar es Salaam, Tanzania
-- Offices: Dar es Salaam (Mwenge) · Dodoma
-- info@teratech.co.tz, +255 22 2701612, +255 713 899 309
-- Official Company Communication badge
-- © 2026 copyright
+## How it works (DKIM-safe pipeline)
 
-### Excluded (per corporate policy)
+Mailcow signs DKIM via the rspamd milter *during* the SMTP submission stage,
+which is before any `content_filter` runs. To keep DKIM valid, the footer is
+added first and the message is then reinjected so it gets signed once, over the
+final (footered) body:
 
-Employee name, job title, personal phone/email, photo, QR code, vCard, social links, meeting buttons.
+```
+Client → submission smtpd (587/465/588)   [milter DISABLED here]
+       → footerfilter (footer-filter.py appends footer)
+       → sendmail reinject → pickup/cleanup [rspamd milter signs DKIM]
+       → delivery
+```
+
+Key facts that make this safe on this server:
+
+- rspamd `dkim_signing` has `sign_local = true` and `use_domain = "envelope"`,
+  so a message reinjected from localhost with the original envelope sender is
+  signed with the correct domain key.
+- The submission services have `-o smtpd_milters=` so DKIM is **not** applied on
+  the first pass — avoiding a broken signature over the pre-footer body.
+- `footer-filter.py` reinjects with `MAIL_CONFIG=/etc/postfix`. Mailcow runs
+  Postfix from `/opt/postfix/conf`, which `postdrop` rejects as unauthorized;
+  `/etc/postfix` shares the same `queue_directory` (`/var/spool/postfix`), so
+  reinjection lands in the running instance's queue.
+- The filter adds an `X-Corporate-Footer: TERA` header and skips messages that
+  already have it (loop guard), plus bulk/list/auto-submitted mail.
+- On any error the original message is reinjected unchanged, so mail is never
+  lost or corrupted by the filter.
 
 ## Local preview
 
@@ -39,120 +64,104 @@ Employee name, job title, personal phone/email, photo, QR code, vCard, social li
 ./scripts/preview.sh
 ```
 
-Open:
+Open **http://localhost:8765/preview/email-footer.html** (login preview is at
+`/preview/login.html`). The preview swaps the hosted logo URL for the local file.
 
-- **http://localhost:8765/preview/email-footer.html** — footer in a sample email context
-- **http://localhost:8765/preview/login.html** — login page (unchanged)
+## Deploy footer changes
 
-The preview page loads `corporate-footer.html` and swaps `cid:tera-logo` for the local logo path. Place `branding/mailcow-ui/tera-logo.png` on disk for the logo to appear.
-
-## Deploy footer files to server
-
-From your Mac:
+After editing the footer HTML/TXT or the filter:
 
 ```bash
-chmod +x scripts/deploy-email-footer.sh
 ./scripts/deploy-email-footer.sh
 ```
 
-This uploads footer HTML/TXT, logo, and the Postfix filter script to the Mailcow host. It does **not** enable alterMIME automatically — see below.
+Filter/footer changes take effect on the next message — no reload needed
+(the pipe spawns a fresh process per message). A `postfix reload` is only
+required after changing `master.cf`.
 
-## Mailcow / Postfix setup (one-time)
+## One-time server wiring (already done — for reference / rebuild)
 
-Mailcow has no built-in universal HTML footer ([mailcow#4267](https://github.com/mailcow/mailcow-dockerized/issues/4267)). Use **alterMIME** on the `postfix-mailcow` container.
+If the server is rebuilt from scratch, re-apply the Postfix wiring.
 
-### Pipeline order (critical)
-
-Footer injection must happen **before DKIM signing** or signatures will fail.
-
-```
-Sender → Postfix → alterMIME (append footer) → Rspamd (DKIM sign) → Internet
-```
-
-### 1. Install alterMIME in postfix container
+### 1. Assets
 
 ```bash
-ssh root@161.97.182.204
+./scripts/deploy-email-footer.sh
+```
+
+Lands in `/opt/mailcow-dockerized/data/conf/postfix/disclaimer/`
+(= `/opt/postfix/conf/disclaimer/` in the container).
+
+### 2. master.cf
+
+Add the pipe service (end of `data/conf/postfix/master.cf`):
+
+```
+# TERA corporate footer content filter (DKIM-safe: runs before signing)
+footerfilter unix - n n - - pipe
+  flags=Rq user=nobody null_sender=
+  argv=/opt/postfix/conf/disclaimer/footer-filter.py -f ${sender} -- ${recipient}
+```
+
+Add these two lines to each authenticated submission service
+(`smtps`, `10465`, `submission`, `10587`, `588`):
+
+```
+  -o content_filter=footerfilter:dummy
+  -o smtpd_milters=
+```
+
+### 3. Validate and reload
+
+```bash
 cd /opt/mailcow-dockerized
-docker compose exec postfix-mailcow bash -c 'apt-get update && apt-get install -y altermime'
-```
-
-For a durable setup, build a custom postfix image with `altermime` pre-installed instead of exec-install after each container recreate.
-
-### 2. Deploy footer assets
-
-```bash
-./scripts/deploy-email-footer.sh
-```
-
-Files land in `/opt/postfix/conf/disclaimer/` inside the postfix container:
-
-- `corporate-footer.html`
-- `corporate-footer.txt`
-- `tera-logo.png`
-- `disclaimer` (executable filter script)
-
-### 3. Configure Postfix content filter
-
-Edit postfix `master.cf` inside the container (or via Mailcow override mount). Add a content filter for outbound SMTP:
-
-```
-smtp      inet  n       -       y       -       -       smtpd
-  -o content_filter=dfilt:
-
-dfilt     unix  -       n       n       -       -       pipe
-  flags=Rq user=filter argv=/opt/postfix/conf/disclaimer/disclaimer -f ${sender} -- ${recipient}
-```
-
-Ensure local submission still works (`127.0.0.1:smtp` without the filter if needed).
-
-Create a `filter` system user in the container if it does not exist:
-
-```bash
-docker compose exec postfix-mailcow useradd -r -s /bin/false filter 2>/dev/null || true
-chmod 750 /opt/postfix/conf/disclaimer/disclaimer
-chown filter:filter /opt/postfix/conf/disclaimer/disclaimer
-```
-
-Reload Postfix:
-
-```bash
+docker compose exec postfix-mailcow postfix check
 docker compose exec postfix-mailcow postfix reload
 ```
 
-### 4. Logo CID (optional)
+A timestamped backup of the original is kept as
+`data/conf/postfix/master.cf.bak-footer-*`.
 
-If the logo does not render, configure alterMIME to attach `tera-logo.png` as an inline CID, or change the `src` in `corporate-footer.html` to a stable HTTPS URL:
+### Durability note
 
-```
-https://mail.ticketfasta.co.tz/img/tera-logo.png
-```
-
-Hosted URLs may be blocked by some clients; CID embedding is more reliable.
+- `master.cf`, the filter, and footer assets live under bind-mounted
+  `data/conf/postfix/`, so they survive container restarts and recreation.
+- The filter uses the built-in `nobody` user and the container's built-in
+  `python3` — no packages to install, nothing to lose on a Mailcow update.
+- A future Mailcow release could ship a changed `master.cf`; `update.sh` will
+  flag the local modification for merge. Re-apply the two blocks above if needed.
 
 ## Test checklist
 
-- [ ] Send HTML email from `info@ticketfasta.co.tz` to an external address (Gmail/Outlook)
-- [ ] Footer appears as a single navy bar below the message body
-- [ ] Height is approximately 1.5 inch; no excessive wrapping on desktop clients
-- [ ] Plain-text part shows the `corporate-footer.txt` content
-- [ ] DKIM passes: `Authentication-Results: dkim=pass`
-- [ ] DMARC passes for `ticketfasta.co.tz`
-- [ ] Auto-replies / bounces do **not** get the footer (filter script skips them)
-- [ ] Inbound mail is unaffected
+- [x] Footer appended to HTML and plain-text parts
+- [x] `X-Corporate-Footer: TERA` present; loop guard prevents double-append
+- [x] Attachments preserved intact
+- [x] Message delivered (`status=sent ... delivered via footerfilter service`)
+- [ ] External DKIM check `dkim=pass` (send to Gmail "Show original" or
+      `check-auth@verifier.port25.com` and read the reply in the `info@` inbox)
 
-### Quick DKIM check
+### Verify a delivered message
 
 ```bash
-# On server — watch postfix log while sending test mail
-docker compose logs -f postfix-mailcow rspamd-mailcow
+cd /opt/mailcow-dockerized
+docker compose exec dovecot-mailcow \
+  doveadm fetch -u info@ticketfasta.co.tz text \
+  mailbox INBOX HEADER SUBJECT <your-subject>
 ```
 
-Use [mail-tester.com](https://www.mail-tester.com) or Gmail “Show original” to verify headers.
+### Watch the pipeline live
 
-## Updating the footer
+```bash
+docker compose logs -f postfix-mailcow | grep -iE "footerfilter|status="
+```
 
-1. Edit `branding/email/corporate-footer.html` and/or `.txt`
-2. Preview locally at `http://localhost:8765/preview/email-footer.html`
-3. Run `./scripts/deploy-email-footer.sh`
-4. Send a test email — no Postfix reload needed unless the filter script changed
+## Rollback
+
+Restore the backup and reload:
+
+```bash
+cd /opt/mailcow-dockerized/data/conf/postfix
+cp master.cf.bak-footer-<stamp> master.cf
+cd /opt/mailcow-dockerized
+docker compose exec postfix-mailcow postfix reload
+```

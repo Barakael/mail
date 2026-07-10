@@ -45,6 +45,42 @@
       margin-top: 1rem;
       max-width: 600px;
     }
+    .footer-frame iframe {
+      display: block;
+      width: 100%;
+      border: 0;
+      min-height: 120px;
+      background: transparent;
+    }
+    .footer-frame.is-mobile {
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .footer-frame.is-mobile iframe {
+      width: 320px;
+      min-height: 340px;
+    }
+    .viewport-toggle {
+      display: flex;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+    .viewport-toggle button {
+      font: inherit;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      border: 1px solid #d7e5f4;
+      background: #fff;
+      color: #183b63;
+      cursor: pointer;
+    }
+    .viewport-toggle button.is-active {
+      background: #0F4D8D;
+      border-color: #0F4D8D;
+      color: #fff;
+    }
     .ruler {
       margin: 2rem 0 1rem;
       padding: 0.75rem 1rem;
@@ -62,12 +98,17 @@
   <div class="wrap">
     <h1>TERA Corporate Email Footer</h1>
     <p class="meta">
-      Single-row layout, target height ~1.5&nbsp;in (108px). Production HTML uses <code>cid:tera-logo</code>; preview uses hosted logo path.
+      Desktop: single-row layout (~108px). Mobile: stacked sections with copyright at the bottom. Production logo: <code>https://mail.ticketfasta.co.tz/img/tera-logo.png</code>.
     </p>
     <p><a class="back" href="login.html">&larr; Back to login preview</a></p>
 
     <div class="ruler">
-      Target height: <strong>~108px (1.5 inch)</strong> &middot; Max width: <strong>600px</strong>
+      Desktop: <strong>~108px</strong> single row &middot; Mobile: stacked with copyright at bottom
+    </div>
+
+    <div class="viewport-toggle" role="group" aria-label="Preview width">
+      <button type="button" class="is-active" data-width="desktop">Desktop (600px)</button>
+      <button type="button" data-width="mobile">Mobile (320px)</button>
     </div>
 
     <div class="sample-email">
@@ -78,19 +119,48 @@
         Tera Technologies and Engineering Limited
       </p>
 
-      <div class="footer-frame" id="footer-preview"></div>
+      <div class="footer-frame" id="footer-preview">
+        <iframe id="footer-iframe" title="Email footer preview"></iframe>
+      </div>
     </div>
   </div>
 
   <script>
+    var frame = document.getElementById('footer-preview');
+    var iframe = document.getElementById('footer-iframe');
+    var buttons = document.querySelectorAll('.viewport-toggle button');
+    var footerHtml = '';
+
+    function renderPreview(width) {
+      var isMobile = width === 'mobile';
+      frame.classList.toggle('is-mobile', isMobile);
+      var vw = isMobile ? 320 : 600;
+      var doc = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+        '<meta name="viewport" content="width=' + vw + '">' +
+        '<style>body{margin:0;padding:8px;background:#fff;font-family:sans-serif}</style></head><body>' +
+        footerHtml + '</body></html>';
+      iframe.srcdoc = doc;
+    }
+
+    buttons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        buttons.forEach(function (b) { b.classList.remove('is-active'); });
+        btn.classList.add('is-active');
+        renderPreview(btn.dataset.width);
+      });
+    });
+
     fetch('../branding/email/corporate-footer.html')
       .then(function (r) { return r.text(); })
       .then(function (html) {
-        html = html.replace('src="cid:tera-logo"', 'src="../branding/mailcow-ui/tera-logo.png"');
-        document.getElementById('footer-preview').innerHTML = html;
+        footerHtml = html.replace(
+          'src="https://mail.ticketfasta.co.tz/img/tera-logo.png"',
+          'src="../branding/mailcow-ui/tera-logo.png"'
+        );
+        renderPreview('desktop');
       })
       .catch(function () {
-        document.getElementById('footer-preview').innerHTML =
+        frame.innerHTML =
           '<p style="color:#DC143C;">Could not load footer HTML. Run preview from repo root via <code>./scripts/preview.sh</code>.</p>';
       });
   </script>

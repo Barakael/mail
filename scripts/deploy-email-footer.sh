@@ -1,47 +1,34 @@
 #!/usr/bin/env bash
-# Deploy corporate email footer assets to Mailcow postfix container
+# Deploy the TERA corporate email footer assets to the Mailcow server.
+#
+# The postfix container bind-mounts data/conf/postfix -> /opt/postfix/conf, so
+# copying into data/conf/postfix/disclaimer/ is immediately visible in the
+# container. The content-filter script (footer-filter.py) is picked up on the
+# next message with no reload; a reload is only needed after master.cf changes.
+#
+# One-time master.cf wiring (footerfilter pipe + content_filter on submission
+# services) is NOT done here — see docs/EMAIL_FOOTER.md.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SERVER="root@161.97.182.204"
 MAILCOW="/opt/mailcow-dockerized"
 EMAIL_DIR="$ROOT/branding/email"
-REMOTE_DIR="/opt/mailcow-dockerized/data/conf/postfix/disclaimer"
+REMOTE_DIR="${MAILCOW}/data/conf/postfix/disclaimer"
 
-echo "==> Uploading email footer assets..."
+echo "==> Uploading email footer assets to ${REMOTE_DIR}"
 ssh "${SERVER}" "mkdir -p ${REMOTE_DIR}"
-scp "${EMAIL_DIR}/corporate-footer.html" "${SERVER}:${REMOTE_DIR}/"
-scp "${EMAIL_DIR}/corporate-footer.txt" "${SERVER}:${REMOTE_DIR}/"
-scp "${EMAIL_DIR}/postfix-disclaimer" "${SERVER}:${REMOTE_DIR}/disclaimer"
+scp "${EMAIL_DIR}/footer-filter.py"      "${SERVER}:${REMOTE_DIR}/footer-filter.py"
+scp "${EMAIL_DIR}/corporate-footer.html" "${SERVER}:${REMOTE_DIR}/corporate-footer.html"
+scp "${EMAIL_DIR}/corporate-footer.txt"  "${SERVER}:${REMOTE_DIR}/corporate-footer.txt"
 
+# Logo is served publicly from the web root; keep a copy alongside the filter too.
 if [[ -f "$ROOT/branding/mailcow-ui/tera-logo.png" ]]; then
   scp "$ROOT/branding/mailcow-ui/tera-logo.png" "${SERVER}:${REMOTE_DIR}/tera-logo.png"
-else
-  echo "==> Warning: branding/mailcow-ui/tera-logo.png not found — copying from live web root if present"
-  ssh "${SERVER}" "cp ${MAILCOW}/data/web/img/tera-logo.png ${REMOTE_DIR}/tera-logo.png 2>/dev/null || true"
 fi
 
-echo "==> Installing into postfix-mailcow container..."
-ssh "${SERVER}" bash -s << 'REMOTE'
-set -euo pipefail
-cd /opt/mailcow-dockerized
-CONTAINER="postfix-mailcow"
-DISCLAIMER_DIR="/opt/postfix/conf/disclaimer"
-HOST_DIR="data/conf/postfix/disclaimer"
+echo "==> Setting permissions"
+ssh "${SERVER}" "chmod 755 ${REMOTE_DIR}/footer-filter.py && chmod 644 ${REMOTE_DIR}/corporate-footer.* ${REMOTE_DIR}/tera-logo.png 2>/dev/null || true"
 
-docker compose exec -T "${CONTAINER}" mkdir -p "${DISCLAIMER_DIR}"
-for f in corporate-footer.html corporate-footer.txt tera-logo.png disclaimer; do
-  if [[ -f "${HOST_DIR}/${f}" ]]; then
-    docker compose cp "${HOST_DIR}/${f}" "${CONTAINER}:${DISCLAIMER_DIR}/${f}"
-  fi
-done
-
-docker compose exec -T "${CONTAINER}" chmod 750 "${DISCLAIMER_DIR}/disclaimer" 2>/dev/null || true
-docker compose exec -T "${CONTAINER}" useradd -r -s /bin/false filter 2>/dev/null || true
-docker compose exec -T "${CONTAINER}" chown -R filter:filter "${DISCLAIMER_DIR}" 2>/dev/null || true
-
-echo "Footer files installed in postfix container at ${DISCLAIMER_DIR}/"
-echo ""
-echo "Next steps (one-time): enable alterMIME — see docs/EMAIL_FOOTER.md"
-REMOTE
-
-echo "==> Done. See docs/EMAIL_FOOTER.md for alterMIME setup and testing."
+echo "==> Done."
+echo "    Filter changes are live immediately (pipe spawns a fresh process per message)."
+echo "    If this is the first install, wire master.cf once — see docs/EMAIL_FOOTER.md."
