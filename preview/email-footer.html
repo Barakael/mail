@@ -155,7 +155,7 @@
       .then(function (html) {
         footerHtml = html.replace(
           'src="https://mail.ticketfasta.co.tz/img/tera-logo.png"',
-          'src="../branding/mailcow-ui/tera-logo.png"'
+          'src="' + location.origin + '/branding/mailcow-ui/tera-logo.png"'
         );
         renderPreview('desktop');
       })
