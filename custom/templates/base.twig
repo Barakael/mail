@@ -16,13 +16,23 @@
   <link rel="preload" href="{{ css_path }}" as="style">
   <link rel="stylesheet" href="{{ css_path }}">
   <script>
-    // Skip auto dark mode on the public user login page (keep Ticketfasta branding light)
+    // Login pages are always light — no dark theme, no OS preference
     var path = window.location.pathname.replace(/\/+$/, '') || '/';
-    var isUserLogin = (path === '/' || path === '/index.php');
-    if (!isUserLogin && (
+    var isLoginPage = (
+      path === '/' ||
+      path === '/index.php' ||
+      path === '/admin' ||
+      path === '/domainadmin' ||
+      path === '/reset-password'
+    );
+    if (isLoginPage) {
+      try { localStorage.setItem('mailcow_theme', 'light'); } catch (e) {}
+      var dark = document.getElementById('dark-mode-theme');
+      if (dark) dark.remove();
+    } else if (
         (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches && localStorage.getItem("mailcow_theme") !== "light") ||
         localStorage.getItem("mailcow_theme") === "dark"
-    )) {
+    ) {
       var head  = document.getElementsByTagName('head')[0];
       var link  = document.createElement('link');
       link.id   = 'dark-mode-theme';

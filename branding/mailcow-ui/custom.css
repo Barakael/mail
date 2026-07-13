@@ -113,6 +113,13 @@ a:hover {
   border-bottom: 2px solid var(--tf-accent);
 }
 
+/* Login pages: hide dark-mode toggle; keep light branding */
+.card-header .form-check.form-switch:has(#dark-mode-toggle),
+body:has(.tf-powered-by) #dark-mode-toggle,
+body:has(.tf-login-card) #dark-mode-toggle {
+  display: none !important;
+}
+
 body {
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
 }
