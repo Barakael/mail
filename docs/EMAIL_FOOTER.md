@@ -18,8 +18,10 @@ Status: **live** on `mail.ticketfasta.co.tz`.
 
 ## Design spec
 
-- Single horizontal row, five columns (logo, company, locations, contact, badge + copyright)
-- Target height ~108px (1.5 inch), max width 600px
+- Single horizontal row on desktop (≥481px), four columns: brand block, HQ, contact, badge + copyright
+- On mobile (≤480px): sections stack vertically; copyright moves to a dedicated bottom row (centered, separated by a thin line); desktop inline copyright is hidden
+- `@media` rules are embedded in the footer snippet (supported by Apple Mail, iOS Mail, Gmail app, Outlook.com)
+- Target height ~108px on desktop; mobile height grows naturally with stacked content
 - Colors: navy `#183b63`, accent red `#DC143C`, white text
 - Logo loaded from `https://mail.ticketfasta.co.tz/img/tera-logo.png` (deployed by `scripts/deploy.sh`)
 

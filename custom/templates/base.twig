@@ -16,9 +16,13 @@
   <link rel="preload" href="{{ css_path }}" as="style">
   <link rel="stylesheet" href="{{ css_path }}">
   <script>
-    // check if darkmode is preferred by OS or set by localStorage
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches && localStorage.getItem("mailcow_theme") !== "light" ||
-        localStorage.getItem("mailcow_theme") === "dark") {
+    // Skip auto dark mode on the public user login page (keep Ticketfasta branding light)
+    var path = window.location.pathname.replace(/\/+$/, '') || '/';
+    var isUserLogin = (path === '/' || path === '/index.php');
+    if (!isUserLogin && (
+        (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches && localStorage.getItem("mailcow_theme") !== "light") ||
+        localStorage.getItem("mailcow_theme") === "dark"
+    )) {
       var head  = document.getElementsByTagName('head')[0];
       var link  = document.createElement('link');
       link.id   = 'dark-mode-theme';

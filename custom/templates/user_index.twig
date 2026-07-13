@@ -12,12 +12,8 @@
     <div class="card tf-login-card">
       <div class="card-header d-flex align-items-center text-break">
         <i class="bi bi-person-fill me-2"></i> {{ lang.login.login_user }}
-        <div class="ms-auto form-check form-switch my-auto d-flex align-items-center">
-          <label class="form-check-label"><i class="bi bi-moon-fill"></i></label>
-          <input class="form-check-input ms-2" type="checkbox" id="dark-mode-toggle">
-        </div>
         {% if not oauth2_request %}
-        <div class="ms-4 d-grid d-sm-block">
+        <div class="ms-auto d-grid d-sm-block">
           <button type="button" {% if available_languages|length == 1 %}disabled="true"{% endif %} class="text-secondary btn p-0 border-0 bg-transparent ms-auto dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="flag-icon flag-icon-{{ mailcow_locale[-2:] }}"></span>
           </button>
@@ -33,6 +29,13 @@
         </div>
         {% endif %}
       </div>
+      {# Keep login page light — remove OS/localStorage dark theme if applied in base.twig #}
+      <script>
+        (function () {
+          var el = document.getElementById('dark-mode-theme');
+          if (el) el.remove();
+        })();
+      </script>
       <div class="card-body">
         <div class="text-center mailcow-logo mb-3">
           <img class="main-logo" src="{{ logo|default('/img/cow_mailcow.svg') }}" alt="mailcow">
