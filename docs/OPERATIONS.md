@@ -24,6 +24,26 @@
 - **Address:** `info@ticketfasta.co.tz`
 - **Username:** full email (`info@ticketfasta.co.tz`), not just `info`
 
+## Mailbox owner details (email footer)
+
+The corporate footer contact column uses the mailbox **Full name** plus custom attributes `title` and `phone`. Set them in Mailcow admin (Edit mailbox → Custom attributes), or:
+
+```bash
+./scripts/set-mailbox-owner.sh EMAIL "Full Name" "Title" "Phone"
+```
+
+Seed the current owners:
+
+```bash
+./scripts/set-mailbox-owner.sh info@ticketfasta.co.tz \
+  "Barakael Lucas" "Head of Software Department" "+255629288966"
+
+./scripts/set-mailbox-owner.sh support@ticketfasta.co.tz \
+  "Marcelina Nki" "Business Analyst" "0770497383"
+```
+
+See [EMAIL_FOOTER.md](EMAIL_FOOTER.md) for the full workflow.
+
 ## Deploy branding (from your Mac)
 
 ```bash

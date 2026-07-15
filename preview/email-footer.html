@@ -61,12 +61,15 @@
       width: 320px;
       min-height: 340px;
     }
-    .viewport-toggle {
+    .viewport-toggle,
+    .sender-toggle {
       display: flex;
+      flex-wrap: wrap;
       gap: 0.5rem;
       margin: 1rem 0;
     }
-    .viewport-toggle button {
+    .viewport-toggle button,
+    .sender-toggle button {
       font: inherit;
       font-size: 0.85rem;
       padding: 0.4rem 0.85rem;
@@ -76,7 +79,8 @@
       color: #183b63;
       cursor: pointer;
     }
-    .viewport-toggle button.is-active {
+    .viewport-toggle button.is-active,
+    .sender-toggle button.is-active {
       background: #0F4D8D;
       border-color: #0F4D8D;
       color: #fff;
@@ -92,18 +96,30 @@
     }
     .ruler strong { color: #183b63; }
     a.back { color: #0F4D8D; }
+    .sender-label {
+      font-size: 0.8rem;
+      color: #5a7a96;
+      margin: 0.5rem 0 0;
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>TERA Corporate Email Footer</h1>
     <p class="meta">
-      Desktop: single-row layout (~108px). Mobile: stacked sections with copyright at the bottom. Production logo: <code>https://mail.ticketfasta.co.tz/img/tera-logo.png</code>.
+      Desktop: single-row layout. Contact column uses mailbox Full name + custom attributes <code>title</code> / <code>phone</code> when set; otherwise company contact. Production emails embed the logo inline.
     </p>
     <p><a class="back" href="login.html">&larr; Back to login preview</a></p>
 
     <div class="ruler">
-      Desktop: <strong>~108px</strong> single row &middot; Mobile: stacked with copyright at bottom
+      Desktop: single row &middot; Mobile: stacked with copyright at bottom &middot; Preview simulates mailbox owners (not live Mailcow)
+    </div>
+
+    <p class="sender-label">Simulate sender</p>
+    <div class="sender-toggle" role="group" aria-label="Sender mailbox">
+      <button type="button" class="is-active" data-sender="info">info@ (Barakael Lucas)</button>
+      <button type="button" data-sender="support">support@ (Marcelina Nki)</button>
+      <button type="button" data-sender="unmapped">Unmapped (company fallback)</button>
     </div>
 
     <div class="viewport-toggle" role="group" aria-label="Preview width">
@@ -116,7 +132,7 @@
         Dear Customer,<br><br>
         Thank you for your inquiry. Please find the requested information attached.<br><br>
         Kind regards,<br>
-        Tera Technologies and Engineering Limited
+        <span id="sign-off">Tera Technologies and Engineering Limited</span>
       </p>
 
       <div class="footer-frame" id="footer-preview">
@@ -128,36 +144,110 @@
   <script>
     var frame = document.getElementById('footer-preview');
     var iframe = document.getElementById('footer-iframe');
-    var buttons = document.querySelectorAll('.viewport-toggle button');
-    var footerHtml = '';
+    var widthButtons = document.querySelectorAll('.viewport-toggle button');
+    var senderButtons = document.querySelectorAll('.sender-toggle button');
+    var signOff = document.getElementById('sign-off');
+    var footerTemplate = '';
+    var currentWidth = 'desktop';
+    var currentSender = 'info';
 
-    function renderPreview(width) {
-      var isMobile = width === 'mobile';
+    var SENDERS = {
+      info: {
+        email: 'info@ticketfasta.co.tz',
+        name: 'Barakael Lucas',
+        title: 'Head of Software Department',
+        phone: '+255629288966',
+        phone2: '',
+        signOff: 'Barakael Lucas'
+      },
+      support: {
+        email: 'support@ticketfasta.co.tz',
+        name: 'Marcelina Nki',
+        title: 'Business Analyst',
+        phone: '0770497383',
+        phone2: '',
+        signOff: 'Marcelina Nki'
+      },
+      unmapped: {
+        email: 'info@teratech.co.tz',
+        name: '',
+        title: '',
+        phone: '+255 22 2701612',
+        phone2: '+255 713 899 309',
+        signOff: 'Tera Technologies and Engineering Limited'
+      }
+    };
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function fillFooter(tmpl, fields) {
+      var nameBlock = fields.name
+        ? '<div style="font-size:10px;font-weight:700;color:#FFFFFF;line-height:1.25;">' + esc(fields.name) + '</div>'
+        : '';
+      var titleBlock = fields.title
+        ? '<div style="font-size:9px;color:#B8D4F0;margin:1px 0 2px;">' + esc(fields.title) + '</div>'
+        : '';
+      var phone2Desktop = fields.phone2
+        ? '<div style="color:#D0E4F8;">' + esc(fields.phone2) + '</div>'
+        : '';
+      var phone2Mobile = fields.phone2
+        ? '<td style="color:#D0E4F8;font-size:10px;padding-top:4px;white-space:nowrap;">' + esc(fields.phone2) + '</td>'
+        : '';
+      return tmpl
+        .replace(/\{\{owner_name_block\}\}/g, nameBlock)
+        .replace(/\{\{owner_title_block\}\}/g, titleBlock)
+        .replace(/\{\{sender_email\}\}/g, esc(fields.email))
+        .replace(/\{\{owner_phone\}\}/g, esc(fields.phone))
+        .replace(/\{\{owner_phone_2_desktop\}\}/g, phone2Desktop)
+        .replace(/\{\{owner_phone_2_mobile\}\}/g, phone2Mobile);
+    }
+
+    function renderPreview() {
+      var isMobile = currentWidth === 'mobile';
       frame.classList.toggle('is-mobile', isMobile);
+      var fields = SENDERS[currentSender];
+      signOff.textContent = fields.signOff;
+      var filled = fillFooter(footerTemplate, fields);
       var vw = isMobile ? 320 : 600;
       var doc = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
         '<meta name="viewport" content="width=' + vw + '">' +
         '<style>body{margin:0;padding:8px;background:#fff;font-family:sans-serif}</style></head><body>' +
-        footerHtml + '</body></html>';
+        filled + '</body></html>';
       iframe.srcdoc = doc;
     }
 
-    buttons.forEach(function (btn) {
+    widthButtons.forEach(function (btn) {
       btn.addEventListener('click', function () {
-        buttons.forEach(function (b) { b.classList.remove('is-active'); });
+        widthButtons.forEach(function (b) { b.classList.remove('is-active'); });
         btn.classList.add('is-active');
-        renderPreview(btn.dataset.width);
+        currentWidth = btn.dataset.width;
+        renderPreview();
+      });
+    });
+
+    senderButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        senderButtons.forEach(function (b) { b.classList.remove('is-active'); });
+        btn.classList.add('is-active');
+        currentSender = btn.dataset.sender;
+        renderPreview();
       });
     });
 
     fetch('../branding/email/corporate-footer.html')
       .then(function (r) { return r.text(); })
       .then(function (html) {
-        footerHtml = html.replace(
-          'src="https://mail.ticketfasta.co.tz/img/tera-logo.png"',
-          'src="' + location.origin + '/branding/mailcow-ui/tera-logo.png"'
+        footerTemplate = html.replace(
+          '{{logo_src}}',
+          location.origin + '/branding/mailcow-ui/tera-logo.png'
         );
-        renderPreview('desktop');
+        renderPreview();
       })
       .catch(function () {
         frame.innerHTML =

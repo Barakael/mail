@@ -8,13 +8,22 @@ signing: it appends the footer, then reinjects the message with `sendmail`.
 The reinjected message is signed by rspamd on the way out (sign_local=true),
 so DKIM covers the footered body with a single valid signature.
 
+Owner name / title / phone are read live from the Mailcow mailbox record
+(Full name + custom attributes `title` and `phone`). See docs/EMAIL_FOOTER.md.
+
 Safety: on ANY error the ORIGINAL message is reinjected unchanged, so mail is
 never lost or corrupted by this filter. Only if reinjection itself fails do we
 return EX_TEMPFAIL so Postfix retries.
 """
+import html
+import json
 import os
+import ssl
 import sys
 import subprocess
+import urllib.error
+import urllib.parse
+import urllib.request
 from email import policy
 from email.parser import BytesParser
 
@@ -29,6 +38,15 @@ REINJECT_CONFIG = "/etc/postfix"
 FLAG_HEADER = "X-Corporate-Footer"
 FLAG_VALUE = "TERA"
 SIGN_DOMAINS = ("ticketfasta.co.tz", "teratech.co.tz")
+API_CONFIG_PATH = DISCLAIMER_DIR + "/footer-api.env"
+DEFAULT_API_BASE = "https://nginx-mailcow"
+LOGO_PATH = DISCLAIMER_DIR + "/tera-logo.png"
+LOGO_CID = "tera-logo@ticketfasta.co.tz"
+HOSTED_LOGO_URL = "https://mail.ticketfasta.co.tz/img/tera-logo.png"
+
+FALLBACK_EMAIL = "info@teratech.co.tz"
+FALLBACK_PHONE = "+255 22 2701612"
+FALLBACK_PHONE_2 = "+255 713 899 309"
 
 EX_TEMPFAIL = 75
 
@@ -45,22 +63,196 @@ def reinject(raw_bytes, args):
     return result.returncode
 
 
-def sender_domain(args):
+def envelope_sender(args):
+    """Return the lowercase envelope sender address from -f, or empty string."""
     if "-f" in args:
         i = args.index("-f")
         if i + 1 < len(args):
-            addr = args[i + 1].strip().strip("<>").lower()
-            if "@" in addr:
-                return addr.rsplit("@", 1)[-1]
+            return args[i + 1].strip().strip("<>").lower()
+    return ""
+
+
+def sender_domain(args):
+    addr = envelope_sender(args)
+    if "@" in addr:
+        return addr.rsplit("@", 1)[-1]
     return ""
 
 
 def read_footers():
     with open(DISCLAIMER_DIR + "/corporate-footer.html", encoding="utf-8") as fh:
-        html = fh.read()
+        html_tmpl = fh.read()
     with open(DISCLAIMER_DIR + "/corporate-footer.txt", encoding="utf-8") as fh:
         text = fh.read()
-    return html, text
+    return html_tmpl, text
+
+
+def read_logo():
+    """Return the inline footer logo, or None to use the hosted fallback."""
+    try:
+        with open(LOGO_PATH, "rb") as fh:
+            return fh.read()
+    except OSError:
+        return None
+
+
+def load_api_config():
+    """Load API_KEY / API_BASE from footer-api.env (server-local, not in git)."""
+    cfg = {"API_KEY": "", "API_BASE": DEFAULT_API_BASE}
+    try:
+        with open(API_CONFIG_PATH, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, val = line.split("=", 1)
+                cfg[key.strip()] = val.strip().strip('"').strip("'")
+    except OSError:
+        pass
+    return cfg
+
+
+def fetch_mailbox(username):
+    """GET mailbox details from Mailcow API. Returns dict or None."""
+    cfg = load_api_config()
+    api_key = cfg.get("API_KEY") or ""
+    if not api_key:
+        return None
+    base = (cfg.get("API_BASE") or DEFAULT_API_BASE).rstrip("/")
+    url = base + "/api/v1/get/mailbox/" + urllib.parse.quote(username, safe="@")
+    req = urllib.request.Request(
+        url,
+        headers={"X-API-Key": api_key, "Accept": "application/json"},
+        method="GET",
+    )
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    try:
+        with urllib.request.urlopen(req, context=ctx, timeout=3) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError, ValueError):
+        return None
+    if isinstance(data, list):
+        if not data:
+            return None
+        data = data[0]
+    if not isinstance(data, dict):
+        return None
+    # Mailcow sometimes returns an error object instead of a mailbox
+    if data.get("type") == "error" or "username" not in data and "name" not in data:
+        if "username" not in data:
+            return None
+    return data
+
+
+def parse_custom_attributes(raw):
+    if raw is None or raw == "":
+        return {}
+    if isinstance(raw, dict):
+        return raw
+    if isinstance(raw, str):
+        try:
+            parsed = json.loads(raw)
+            return parsed if isinstance(parsed, dict) else {}
+        except json.JSONDecodeError:
+            return {}
+    return {}
+
+
+def contact_fields(sender):
+    """Resolve contact placeholders for the sender mailbox."""
+    mailbox = fetch_mailbox(sender) if sender else None
+    if mailbox:
+        attrs = parse_custom_attributes(mailbox.get("custom_attributes"))
+        title = str(attrs.get("title") or "").strip()
+        phone = str(attrs.get("phone") or "").strip()
+        name = str(mailbox.get("name") or "").strip()
+        if title or phone:
+            return {
+                "sender_email": sender,
+                "owner_name": name,
+                "owner_title": title,
+                "owner_phone": phone or FALLBACK_PHONE,
+                "owner_phone_2": "",
+                "personalized": True,
+            }
+    return {
+        "sender_email": FALLBACK_EMAIL,
+        "owner_name": "",
+        "owner_title": "",
+        "owner_phone": FALLBACK_PHONE,
+        "owner_phone_2": FALLBACK_PHONE_2,
+        "personalized": False,
+    }
+
+
+def render_footers(html_tmpl, text_tmpl, fields, logo_embedded=False):
+    """Fill HTML/TXT placeholders from contact fields."""
+    name = fields["owner_name"]
+    title = fields["owner_title"]
+    email = fields["sender_email"]
+    phone = fields["owner_phone"]
+    phone2 = fields["owner_phone_2"]
+
+    if name:
+        name_block = (
+            '<div style="font-size:10px;font-weight:700;color:#FFFFFF;line-height:1.25;">'
+            + html.escape(name)
+            + "</div>"
+        )
+    else:
+        name_block = ""
+
+    if title:
+        title_block = (
+            '<div style="font-size:9px;color:#B8D4F0;margin:1px 0 2px;">'
+            + html.escape(title)
+            + "</div>"
+        )
+    else:
+        title_block = ""
+
+    if phone2:
+        phone2_desktop = (
+            '<div style="color:#D0E4F8;">' + html.escape(phone2) + "</div>"
+        )
+        phone2_mobile = (
+            '<td style="color:#D0E4F8;font-size:10px;padding-top:4px;white-space:nowrap;">'
+            + html.escape(phone2)
+            + "</td>"
+        )
+    else:
+        phone2_desktop = ""
+        phone2_mobile = ""
+
+    html_out = (
+        html_tmpl.replace("{{owner_name_block}}", name_block)
+        .replace("{{owner_title_block}}", title_block)
+        .replace(
+            "{{logo_src}}",
+            "cid:" + LOGO_CID if logo_embedded else HOSTED_LOGO_URL,
+        )
+        .replace("{{sender_email}}", html.escape(email))
+        .replace("{{owner_phone}}", html.escape(phone))
+        .replace("{{owner_phone_2_desktop}}", phone2_desktop)
+        .replace("{{owner_phone_2_mobile}}", phone2_mobile)
+    )
+
+    # Plain-text contact line
+    parts = []
+    if name:
+        parts.append(name)
+    if title:
+        parts.append(title)
+    parts.append(email)
+    parts.append(phone)
+    if phone2:
+        parts.append(phone2)
+    text_line = "Contact: " + " | ".join(parts)
+    text_out = text_tmpl.replace("{{owner_text_line}}", text_line)
+
+    return html_out, text_out
 
 
 def is_automated(msg):
@@ -75,9 +267,10 @@ def is_automated(msg):
     return False
 
 
-def append_footer(msg, html_footer, text_footer):
+def append_footer(msg, html_footer, text_footer, logo_data=None):
     """Append footers to visible body parts. Returns True if anything changed."""
     changed = False
+    html_parts = []
     for part in msg.walk():
         if part.is_multipart():
             continue
@@ -94,6 +287,7 @@ def append_footer(msg, html_footer, text_footer):
                 else:
                     body = body + html_footer
                 part.set_content(body, subtype="html")
+                html_parts.append(part)
                 changed = True
             elif ctype == "text/plain":
                 body = part.get_content()
@@ -102,6 +296,17 @@ def append_footer(msg, html_footer, text_footer):
         except (LookupError, ValueError):
             # Undecodable/unknown charset — leave this part untouched
             continue
+
+    if logo_data:
+        for part in html_parts:
+            part.add_related(
+                logo_data,
+                maintype="image",
+                subtype="png",
+                cid="<" + LOGO_CID + ">",
+                disposition="inline",
+                filename="tera-logo.png",
+            )
     return changed
 
 
@@ -118,8 +323,18 @@ def main():
         if msg.get(FLAG_HEADER) or is_automated(msg):
             return reinject(raw, args)
 
-        html_footer, text_footer = read_footers()
-        if not append_footer(msg, html_footer, text_footer):
+        sender = envelope_sender(args)
+        fields = contact_fields(sender)
+        html_tmpl, text_tmpl = read_footers()
+        logo_data = read_logo()
+        html_footer, text_footer = render_footers(
+            html_tmpl,
+            text_tmpl,
+            fields,
+            logo_embedded=bool(logo_data),
+        )
+
+        if not append_footer(msg, html_footer, text_footer, logo_data):
             return reinject(raw, args)
 
         del msg[FLAG_HEADER]
