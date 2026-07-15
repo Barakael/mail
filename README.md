@@ -37,7 +37,7 @@ Then hard-refresh https://mail.ticketfasta.co.tz (Cmd+Shift+R).
 | [docs/OPERATIONS.md](docs/OPERATIONS.md) | Server access, deploy, password reset, container health |
 | [docs/MAILBOX_SETUP.md](docs/MAILBOX_SETUP.md) | `info@ticketfasta.co.tz` client settings and troubleshooting |
 | [docs/DNS_RECORDS.md](docs/DNS_RECORDS.md) | SPF, DKIM, DMARC, PTR records to publish |
-| [docs/EMAIL_FOOTER.md](docs/EMAIL_FOOTER.md) | Universal TERA corporate email footer |
+| [docs/EMAIL_FOOTER.md](docs/EMAIL_FOOTER.md) | TERA corporate email footer (mailbox-backed owner contact) |
 
 ## Folder structure
 
