@@ -15,7 +15,7 @@
       color: #183b63;
     }
     .wrap {
-      max-width: 720px;
+      max-width: 840px;
       margin: 0 auto;
     }
     h1 {
@@ -43,7 +43,7 @@
     }
     .footer-frame {
       margin-top: 1rem;
-      max-width: 600px;
+      max-width: 720px;
     }
     .footer-frame iframe {
       display: block;
@@ -123,7 +123,7 @@
     </div>
 
     <div class="viewport-toggle" role="group" aria-label="Preview width">
-      <button type="button" class="is-active" data-width="desktop">Desktop (600px)</button>
+      <button type="button" class="is-active" data-width="desktop">Desktop (720px)</button>
       <button type="button" data-width="mobile">Mobile (320px)</button>
     </div>
 
@@ -214,7 +214,7 @@
       var fields = SENDERS[currentSender];
       signOff.textContent = fields.signOff;
       var filled = fillFooter(footerTemplate, fields);
-      var vw = isMobile ? 320 : 600;
+      var vw = isMobile ? 320 : 720;
       var doc = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
         '<meta name="viewport" content="width=' + vw + '">' +
         '<style>body{margin:0;padding:8px;background:#fff;font-family:sans-serif}</style></head><body>' +

@@ -58,7 +58,7 @@ If title and phone are both missing (or the lookup fails), the footer falls back
 
 ## Design spec
 
-- Single horizontal row on desktop (≥481px), four columns: brand block, HQ, contact, badge + copyright
+- Single horizontal row up to 720px on desktop (≥481px), four columns: brand block, HQ, contact, badge + copyright
 - On mobile (≤480px): sections stack vertically; copyright moves to a dedicated bottom row
 - Contact column: owner name + title (when set), mailbox address, phone(s)
 - Colors: navy `#183b63`, accent red `#DC143C`, white text
