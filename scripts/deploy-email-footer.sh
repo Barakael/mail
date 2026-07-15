@@ -24,8 +24,11 @@ scp "${EMAIL_DIR}/footer-filter.py"      "${SERVER}:${REMOTE_DIR}/footer-filter.
 scp "${EMAIL_DIR}/corporate-footer.html" "${SERVER}:${REMOTE_DIR}/corporate-footer.html"
 scp "${EMAIL_DIR}/corporate-footer.txt"  "${SERVER}:${REMOTE_DIR}/corporate-footer.txt"
 
-# Logo is served publicly from the web root; keep a copy alongside the filter too.
+# Publish the logo at the HTTPS URL used by email clients. The footer references
+# this web copy so Gmail does not expose it as a MIME attachment.
 if [[ -f "$ROOT/branding/mailcow-ui/tera-logo.png" ]]; then
+  ssh "${SERVER}" "mkdir -p ${MAILCOW}/data/web/img"
+  scp "$ROOT/branding/mailcow-ui/tera-logo.png" "${SERVER}:${MAILCOW}/data/web/img/tera-logo.png"
   scp "$ROOT/branding/mailcow-ui/tera-logo.png" "${SERVER}:${REMOTE_DIR}/tera-logo.png"
 fi
 

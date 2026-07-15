@@ -62,8 +62,8 @@ If title and phone are both missing (or the lookup fails), the footer falls back
 - On mobile (≤480px): sections stack vertically; copyright moves to a dedicated bottom row
 - Contact column: owner name + title (when set), mailbox address, phone(s)
 - Colors: navy `#183b63`, accent red `#DC143C`, white text
-- Logo: embedded as an inline CID image in each HTML email; the hosted URL is
-  used only if the local logo asset cannot be read
+- Logo: hosted over HTTPS at `https://mail.ticketfasta.co.tz/img/tera-logo.png`;
+  it is not attached to the message
 
 ## How it works (DKIM-safe pipeline)
 
@@ -80,8 +80,9 @@ Key facts:
 - Submission services have `-o smtpd_milters=` so DKIM is not applied on the first pass.
 - `footer-filter.py` reinjects with `MAIL_CONFIG=/etc/postfix`.
 - The filter reads `footer-api.env` and calls `GET /api/v1/get/mailbox/<sender>` for Full name + custom attributes.
-- HTML messages include `tera-logo.png` as an inline related MIME part, so
-  recipients do not need to enable remote images to see the logo.
+- The deployment script publishes `tera-logo.png` to Mailcow's public web
+  directory. Email clients fetch it through HTTPS instead of showing it as an
+  attachment.
 - Loop guard: `X-Corporate-Footer: TERA`; skips bulk/list/auto-submitted mail.
 - On any error the original message is reinjected unchanged.
 

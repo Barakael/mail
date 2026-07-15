@@ -40,9 +40,7 @@ FLAG_VALUE = "TERA"
 SIGN_DOMAINS = ("ticketfasta.co.tz", "teratech.co.tz")
 API_CONFIG_PATH = DISCLAIMER_DIR + "/footer-api.env"
 DEFAULT_API_BASE = "https://nginx-mailcow"
-LOGO_PATH = DISCLAIMER_DIR + "/tera-logo.png"
-LOGO_CID = "tera-logo@ticketfasta.co.tz"
-HOSTED_LOGO_URL = "https://mail.ticketfasta.co.tz/img/tera-logo.png"
+HOSTED_LOGO_URL = "https://mail.ticketfasta.co.tz/img/tera-logo.png?v=20260715"
 
 FALLBACK_EMAIL = "info@teratech.co.tz"
 FALLBACK_PHONE = "+255 22 2701612"
@@ -85,15 +83,6 @@ def read_footers():
     with open(DISCLAIMER_DIR + "/corporate-footer.txt", encoding="utf-8") as fh:
         text = fh.read()
     return html_tmpl, text
-
-
-def read_logo():
-    """Return the inline footer logo, or None to use the hosted fallback."""
-    try:
-        with open(LOGO_PATH, "rb") as fh:
-            return fh.read()
-    except OSError:
-        return None
 
 
 def load_api_config():
@@ -187,7 +176,7 @@ def contact_fields(sender):
     }
 
 
-def render_footers(html_tmpl, text_tmpl, fields, logo_embedded=False):
+def render_footers(html_tmpl, text_tmpl, fields):
     """Fill HTML/TXT placeholders from contact fields."""
     name = fields["owner_name"]
     title = fields["owner_title"]
@@ -229,10 +218,7 @@ def render_footers(html_tmpl, text_tmpl, fields, logo_embedded=False):
     html_out = (
         html_tmpl.replace("{{owner_name_block}}", name_block)
         .replace("{{owner_title_block}}", title_block)
-        .replace(
-            "{{logo_src}}",
-            "cid:" + LOGO_CID if logo_embedded else HOSTED_LOGO_URL,
-        )
+        .replace("{{logo_src}}", HOSTED_LOGO_URL)
         .replace("{{sender_email}}", html.escape(email))
         .replace("{{owner_phone}}", html.escape(phone))
         .replace("{{owner_phone_2_desktop}}", phone2_desktop)
@@ -267,10 +253,9 @@ def is_automated(msg):
     return False
 
 
-def append_footer(msg, html_footer, text_footer, logo_data=None):
+def append_footer(msg, html_footer, text_footer):
     """Append footers to visible body parts. Returns True if anything changed."""
     changed = False
-    html_parts = []
     for part in msg.walk():
         if part.is_multipart():
             continue
@@ -287,7 +272,6 @@ def append_footer(msg, html_footer, text_footer, logo_data=None):
                 else:
                     body = body + html_footer
                 part.set_content(body, subtype="html")
-                html_parts.append(part)
                 changed = True
             elif ctype == "text/plain":
                 body = part.get_content()
@@ -296,17 +280,6 @@ def append_footer(msg, html_footer, text_footer, logo_data=None):
         except (LookupError, ValueError):
             # Undecodable/unknown charset — leave this part untouched
             continue
-
-    if logo_data:
-        for part in html_parts:
-            part.add_related(
-                logo_data,
-                maintype="image",
-                subtype="png",
-                cid="<" + LOGO_CID + ">",
-                disposition="inline",
-                filename="tera-logo.png",
-            )
     return changed
 
 
@@ -326,15 +299,9 @@ def main():
         sender = envelope_sender(args)
         fields = contact_fields(sender)
         html_tmpl, text_tmpl = read_footers()
-        logo_data = read_logo()
-        html_footer, text_footer = render_footers(
-            html_tmpl,
-            text_tmpl,
-            fields,
-            logo_embedded=bool(logo_data),
-        )
+        html_footer, text_footer = render_footers(html_tmpl, text_tmpl, fields)
 
-        if not append_footer(msg, html_footer, text_footer, logo_data):
+        if not append_footer(msg, html_footer, text_footer):
             return reinject(raw, args)
 
         del msg[FLAG_HEADER]
