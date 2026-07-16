@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Postfix content filter that appends the TERA corporate footer.
+"""Postfix content filter that appends the SuperTech corporate footer.
 
 Wired into master.cf as the `footerfilter` pipe service and attached to the
 authenticated submission services (587/465/588 + haproxy variants). Those
@@ -36,15 +36,15 @@ DISCLAIMER_DIR = "/opt/postfix/conf/disclaimer"
 # with "unauthorized configuration directory name: /opt/postfix/conf".
 REINJECT_CONFIG = "/etc/postfix"
 FLAG_HEADER = "X-Corporate-Footer"
-FLAG_VALUE = "TERA"
-SIGN_DOMAINS = ("ticketfasta.co.tz", "teratech.co.tz")
+FLAG_VALUE = "SuperTech"
+SIGN_DOMAINS = ("supertechltd.co.tz",)
 API_CONFIG_PATH = DISCLAIMER_DIR + "/footer-api.env"
 DEFAULT_API_BASE = "https://nginx-mailcow"
-HOSTED_LOGO_URL = "https://mail.ticketfasta.co.tz/img/tera-logo.png?v=20260715"
+HOSTED_LOGO_URL = "https://mail.supertechltd.co.tz/img/supertech-logo.png?v=20260716"
 
-FALLBACK_EMAIL = "info@teratech.co.tz"
-FALLBACK_PHONE = "+255 22 2701612"
-FALLBACK_PHONE_2 = "+255 713 899 309"
+FALLBACK_EMAIL = "info@supertechltd.co.tz"
+FALLBACK_PHONE = "0784 777 711"
+FALLBACK_PHONE_2 = ""
 
 EX_TEMPFAIL = 75
 
