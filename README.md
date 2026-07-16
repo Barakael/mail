@@ -1,6 +1,6 @@
-# Ticketfasta Mail
+# SuperTech Mail
 
-Customize the Mailcow login page and webmail theme, deploy to **mail.ticketfasta.co.tz**.
+Customize the Mailcow login page and webmail theme, deploy to **mail.supertechltd.co.tz**.
 
 **Git:** `git@github.com:Barakael/mail.git`
 
@@ -22,7 +22,7 @@ Open **http://localhost:8765/preview/login.html**
 ./scripts/deploy.sh
 ```
 
-Then hard-refresh https://mail.ticketfasta.co.tz (Cmd+Shift+R).
+Then hard-refresh https://mail.supertechltd.co.tz (Cmd+Shift+R).
 
 ### Verify DNS and HTTPS
 
@@ -35,16 +35,16 @@ Then hard-refresh https://mail.ticketfasta.co.tz (Cmd+Shift+R).
 | Doc | Purpose |
 |-----|---------|
 | [docs/OPERATIONS.md](docs/OPERATIONS.md) | Server access, deploy, password reset, container health |
-| [docs/MAILBOX_SETUP.md](docs/MAILBOX_SETUP.md) | `info@ticketfasta.co.tz` client settings and troubleshooting |
+| [docs/MAILBOX_SETUP.md](docs/MAILBOX_SETUP.md) | `info@supertechltd.co.tz` client settings and troubleshooting |
 | [docs/DNS_RECORDS.md](docs/DNS_RECORDS.md) | SPF, DKIM, DMARC, PTR records to publish |
-| [docs/EMAIL_FOOTER.md](docs/EMAIL_FOOTER.md) | TERA corporate email footer (mailbox-backed owner contact) |
+| [docs/EMAIL_FOOTER.md](docs/EMAIL_FOOTER.md) | SuperTech corporate email footer (mailbox-backed owner contact) |
 
 ## Folder structure
 
 ```
 ticketfasta-mail-platform/
 ├── branding/           # Logos, CSS, UI text — deployed to server
-├── custom/templates/   # Twig overrides (login page, Tera branding)
+├── custom/templates/   # Twig overrides (login page, SuperTech branding)
 ├── preview/            # Static local preview
 ├── scripts/
 │   ├── deploy.sh       # Push branding to 161.97.182.204
@@ -67,8 +67,8 @@ ticketfasta-mail-platform/
 
 ## Mailbox login
 
-- **URL:** https://mail.ticketfasta.co.tz/
-- **Username:** `info@ticketfasta.co.tz` (full email)
+- **URL:** https://mail.supertechltd.co.tz/
+- **Username:** `info@supertechltd.co.tz` (full email)
 - **Password:** set on server — see [docs/OPERATIONS.md](docs/OPERATIONS.md)
 
 ## What this repo does *not* do
