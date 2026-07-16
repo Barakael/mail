@@ -1,22 +1,22 @@
-/* Ticketfasta Mailcow UI — edit freely, deploy with ./deploy.sh */
+/* SuperTech Mailcow UI — edit freely, deploy with ./deploy.sh */
 
 :root {
-  --tf-primary: #0F4D8D;
-  --tf-accent: #DC143C;
+  --tf-primary: #002E5D;
+  --tf-accent: #7B1113;
   --tf-white: #FFFFFF;
-  --tf-tera-blue: #2f78dd;
-  --tf-tera-navy: #183b63;
+  --tf-navy: #002E5D;
+  --tf-maroon: #7B1113;
 }
 
-/* Login page — BPM-inspired background */
+/* Login page — SuperTech brand background */
 body.tf-login-page,
 body:has(.tf-powered-by) {
   position: relative;
   background:
-    radial-gradient(circle at 10% 14%, rgba(115, 184, 255, 0.36), transparent 24%),
-    radial-gradient(circle at 86% 16%, rgba(70, 135, 240, 0.28), transparent 22%),
-    radial-gradient(circle at 74% 72%, rgba(48, 196, 227, 0.16), transparent 20%),
-    linear-gradient(135deg, #edf4fb 0%, #f7fbff 48%, #eaf3ff 100%);
+    radial-gradient(circle at 10% 14%, rgba(0, 46, 93, 0.12), transparent 24%),
+    radial-gradient(circle at 86% 16%, rgba(123, 17, 19, 0.10), transparent 22%),
+    radial-gradient(circle at 74% 72%, rgba(0, 46, 93, 0.08), transparent 20%),
+    linear-gradient(135deg, #eef2f7 0%, #f7f9fc 48%, #e8edf4 100%);
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -32,13 +32,13 @@ body:has(.tf-powered-by) .container.flex-grow-1 {
 
 .tf-login-card,
 body:has(.tf-powered-by) .card {
-  border: 1px solid #d7e5f4;
+  border: 1px solid #d0d8e4;
   border-radius: 1.25rem;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 30px 80px rgba(18, 58, 99, 0.16);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 30px 80px rgba(0, 46, 93, 0.14);
 }
 
-/* TERA powered-by badge (matches BPM login) */
+/* SuperTech brand block on login */
 .tf-powered-by {
   display: flex;
   flex-direction: column;
@@ -50,16 +50,18 @@ body:has(.tf-powered-by) .card {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 4.5rem;
-  width: 4.5rem;
-  border-radius: 1.4rem;
-  background-image: radial-gradient(rgba(47, 120, 221, 0.92) 1px, transparent 1px);
-  background-size: 9px 9px;
+  height: 5.5rem;
+  width: 5.5rem;
+  border-radius: 1.25rem;
+  background: #FFFFFF;
+  border: 1px solid #d0d8e4;
+  box-shadow: 0 8px 24px rgba(0, 46, 93, 0.08);
 }
 
 .tf-powered-by__logo img {
-  height: 2.25rem;
+  height: 3.25rem;
   width: auto;
+  object-fit: contain;
 }
 
 .tf-powered-by__label {
@@ -67,16 +69,16 @@ body:has(.tf-powered-by) .card {
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #2d6aaf;
+  color: var(--tf-primary);
 }
 
 .tf-powered-by__text {
   font-size: 0.85rem;
-  color: #68839f;
+  color: #5a6b7d;
 }
 
 .tf-powered-by__text strong {
-  color: var(--tf-tera-navy);
+  color: var(--tf-navy);
   font-weight: 700;
 }
 
