@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TERA Email Footer — Preview</title>
+  <title>SuperTech Email Footer — Preview</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -12,7 +12,7 @@
       padding: 2rem 1rem;
       font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
       background: #f0f4f8;
-      color: #183b63;
+      color: #002E5D;
     }
     .wrap {
       max-width: 840px;
@@ -30,10 +30,10 @@
     }
     .sample-email {
       background: #fff;
-      border: 1px solid #d7e5f4;
+      border: 1px solid #d0d8e4;
       border-radius: 12px;
       padding: 1.5rem;
-      box-shadow: 0 8px 24px rgba(18, 58, 99, 0.08);
+      box-shadow: 0 8px 24px rgba(0, 46, 93, 0.08);
     }
     .sample-body {
       font-size: 14px;
@@ -74,28 +74,28 @@
       font-size: 0.85rem;
       padding: 0.4rem 0.85rem;
       border-radius: 6px;
-      border: 1px solid #d7e5f4;
+      border: 1px solid #d0d8e4;
       background: #fff;
-      color: #183b63;
+      color: #002E5D;
       cursor: pointer;
     }
     .viewport-toggle button.is-active,
     .sender-toggle button.is-active {
-      background: #0F4D8D;
-      border-color: #0F4D8D;
+      background: #002E5D;
+      border-color: #002E5D;
       color: #fff;
     }
     .ruler {
       margin: 2rem 0 1rem;
       padding: 0.75rem 1rem;
       background: #fff;
-      border: 1px dashed #DC143C;
+      border: 1px dashed #7B1113;
       border-radius: 8px;
       font-size: 0.8rem;
       color: #5a7a96;
     }
-    .ruler strong { color: #183b63; }
-    a.back { color: #0F4D8D; }
+    .ruler strong { color: #002E5D; }
+    a.back { color: #002E5D; }
     .sender-label {
       font-size: 0.8rem;
       color: #5a7a96;
@@ -105,7 +105,7 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>TERA Corporate Email Footer</h1>
+    <h1>SuperTech Corporate Email Footer</h1>
     <p class="meta">
       Desktop: single-row layout. Contact column uses mailbox Full name + custom attributes <code>title</code> / <code>phone</code> when set; otherwise company contact. Production emails load the logo from the public HTTPS URL.
     </p>
@@ -132,7 +132,7 @@
         Dear Customer,<br><br>
         Thank you for your inquiry. Please find the requested information attached.<br><br>
         Kind regards,<br>
-        <span id="sign-off">Tera Technologies and Engineering Limited</span>
+        <span id="sign-off">SuperTech Limited</span>
       </p>
 
       <div class="footer-frame" id="footer-preview">
@@ -153,7 +153,7 @@
 
     var SENDERS = {
       info: {
-        email: 'info@ticketfasta.co.tz',
+        email: 'info@supertechltd.co.tz',
         name: 'Barakael Lucas',
         title: 'Head of Software Department',
         phone: '+255629288966',
@@ -161,7 +161,7 @@
         signOff: 'Barakael Lucas'
       },
       support: {
-        email: 'support@ticketfasta.co.tz',
+        email: 'support@supertechltd.co.tz',
         name: 'Marcelina Nki',
         title: 'Business Analyst',
         phone: '0770497383',
@@ -169,12 +169,12 @@
         signOff: 'Marcelina Nki'
       },
       unmapped: {
-        email: 'info@teratech.co.tz',
+        email: 'info@supertechltd.co.tz',
         name: '',
         title: '',
-        phone: '+255 22 2701612',
-        phone2: '+255 713 899 309',
-        signOff: 'Tera Technologies and Engineering Limited'
+        phone: '0784 777 711',
+        phone2: '',
+        signOff: 'SuperTech Limited'
       }
     };
 
@@ -245,13 +245,13 @@
       .then(function (html) {
         footerTemplate = html.replace(
           '{{logo_src}}',
-          location.origin + '/branding/mailcow-ui/tera-logo.png'
+          location.origin + '/branding/mailcow-ui/supertech-logo.png'
         );
         renderPreview();
       })
       .catch(function () {
         frame.innerHTML =
-          '<p style="color:#DC143C;">Could not load footer HTML. Run preview from repo root via <code>./scripts/preview.sh</code>.</p>';
+          '<p style="color:#7B1113;">Could not load footer HTML. Run preview from repo root via <code>./scripts/preview.sh</code>.</p>';
       });
   </script>
 </body>

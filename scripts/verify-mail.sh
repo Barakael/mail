@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Read-only DNS and HTTPS checks for Ticketfasta mail
+# Read-only DNS and HTTPS checks for SuperTech mail
 set -euo pipefail
 
-MAIL_HOST="mail.ticketfasta.co.tz"
-DOMAIN="ticketfasta.co.tz"
+MAIL_HOST="mail.supertechltd.co.tz"
+DOMAIN="supertechltd.co.tz"
 IP="161.97.182.204"
 
 echo "==> A record: $MAIL_HOST"

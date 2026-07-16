@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploy the TERA corporate email footer assets to the Mailcow server.
+# Deploy the SuperTech corporate email footer assets to the Mailcow server.
 #
 # The postfix container bind-mounts data/conf/postfix -> /opt/postfix/conf, so
 # copying into data/conf/postfix/disclaimer/ is immediately visible in the
@@ -26,10 +26,10 @@ scp "${EMAIL_DIR}/corporate-footer.txt"  "${SERVER}:${REMOTE_DIR}/corporate-foot
 
 # Publish the logo at the HTTPS URL used by email clients. The footer references
 # this web copy so Gmail does not expose it as a MIME attachment.
-if [[ -f "$ROOT/branding/mailcow-ui/tera-logo.png" ]]; then
+if [[ -f "$ROOT/branding/mailcow-ui/supertech-logo.png" ]]; then
   ssh "${SERVER}" "mkdir -p ${MAILCOW}/data/web/img"
-  scp "$ROOT/branding/mailcow-ui/tera-logo.png" "${SERVER}:${MAILCOW}/data/web/img/tera-logo.png"
-  scp "$ROOT/branding/mailcow-ui/tera-logo.png" "${SERVER}:${REMOTE_DIR}/tera-logo.png"
+  scp "$ROOT/branding/mailcow-ui/supertech-logo.png" "${SERVER}:${MAILCOW}/data/web/img/supertech-logo.png"
+  scp "$ROOT/branding/mailcow-ui/supertech-logo.png" "${SERVER}:${REMOTE_DIR}/supertech-logo.png"
 fi
 
 echo "==> Installing footer-api.env (API key for mailbox owner lookup)"
@@ -54,7 +54,7 @@ chmod 640 "${REMOTE_DIR}/footer-api.env"
 REMOTE
 
 echo "==> Setting permissions"
-ssh "${SERVER}" "chmod 755 ${REMOTE_DIR}/footer-filter.py && chmod 644 ${REMOTE_DIR}/corporate-footer.* ${REMOTE_DIR}/tera-logo.png 2>/dev/null || true && chown 0:65534 ${REMOTE_DIR}/footer-api.env && chmod 640 ${REMOTE_DIR}/footer-api.env"
+ssh "${SERVER}" "chmod 755 ${REMOTE_DIR}/footer-filter.py && chmod 644 ${REMOTE_DIR}/corporate-footer.* ${REMOTE_DIR}/supertech-logo.png 2>/dev/null || true && chown 0:65534 ${REMOTE_DIR}/footer-api.env && chmod 640 ${REMOTE_DIR}/footer-api.env"
 
 echo "==> Done."
 echo "    Filter changes are live immediately (pipe spawns a fresh process per message)."

@@ -7,10 +7,10 @@ MAILCOW="/opt/mailcow-dockerized"
 DIR="$ROOT/branding"
 
 [[ -f "${DIR}/mailcow-ui/branding.env" ]] && source "${DIR}/mailcow-ui/branding.env"
-TITLE_NAME="${TITLE_NAME:-Ticketfasta Mail}"
-MAIN_NAME="${MAIN_NAME:-Ticketfasta}"
+TITLE_NAME="${TITLE_NAME:-SuperTech Mail}"
+MAIN_NAME="${MAIN_NAME:-SuperTech}"
 APPS_NAME="${APPS_NAME:-Mail Apps}"
-UI_FOOTER="${UI_FOOTER:-© 2026 Ticketfasta}"
+UI_FOOTER="${UI_FOOTER:-© 2026 SuperTech Limited}"
 
 echo "==> Uploading..."
 scp "${DIR}/sogo/custom-fulllogo.svg" "${SERVER}:${MAILCOW}/data/conf/sogo/"
@@ -22,11 +22,11 @@ if [[ -f "$ROOT/preview/preview.css" ]]; then
   scp "$ROOT/preview/preview.css" "${SERVER}:/tmp/mailcow-preview.css"
 fi
 [[ -f "${DIR}/mailcow-ui/favicon.png" ]] && scp "${DIR}/mailcow-ui/favicon.png" "${SERVER}:${MAILCOW}/data/web/favicon.png"
-[[ -f "${DIR}/mailcow-ui/tera-logo.png" ]] && scp "${DIR}/mailcow-ui/tera-logo.png" "${SERVER}:${MAILCOW}/data/web/img/tera-logo.png"
+[[ -f "${DIR}/mailcow-ui/supertech-logo.png" ]] && scp "${DIR}/mailcow-ui/supertech-logo.png" "${SERVER}:${MAILCOW}/data/web/img/supertech-logo.png"
 # Smaller logo speeds first paint on slow links
-if command -v sips >/dev/null && [[ -f "${DIR}/mailcow-ui/tera-logo.png" ]]; then
-  sips -Z 120 "${DIR}/mailcow-ui/tera-logo.png" --out /tmp/tera-logo-opt.png >/dev/null 2>&1 \
-    && scp /tmp/tera-logo-opt.png "${SERVER}:${MAILCOW}/data/web/img/tera-logo.png" || true
+if command -v sips >/dev/null && [[ -f "${DIR}/mailcow-ui/supertech-logo.png" ]]; then
+  sips -Z 120 "${DIR}/mailcow-ui/supertech-logo.png" --out /tmp/supertech-logo-opt.png >/dev/null 2>&1 \
+    && scp /tmp/supertech-logo-opt.png "${SERVER}:${MAILCOW}/data/web/img/supertech-logo.png" || true
 fi
 
 # Optional Twig/CSS overrides
@@ -56,4 +56,4 @@ PAYLOAD=$(python3 -c "import json,os; print(json.dumps({'attr':{'title_name':os.
 curl -sk -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" -X POST https://127.0.0.1/api/v1/edit/ui_texts -d "$PAYLOAD" >/dev/null
 docker compose restart memcached-mailcow php-fpm-mailcow nginx-mailcow sogo-mailcow
 REMOTE
-echo "==> Deployed to https://mail.ticketfasta.co.tz"
+echo "==> Deployed to https://mail.supertechltd.co.tz"

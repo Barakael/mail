@@ -1,11 +1,11 @@
-# TERA Corporate Email Footer
+# SuperTech Corporate Email Footer
 
-Footer appended to every outgoing email from `@ticketfasta.co.tz` and
-`@teratech.co.tz`. Brand / HQ / badge columns are the same for everyone; the
-**contact column** shows the sending mailbox’s owner (Full name, title, phone)
-when those fields are set on the mailbox in Mailcow admin.
+Footer appended to every outgoing email from `@supertechltd.co.tz`. Brand / HQ /
+badge columns are the same for everyone; the **contact column** shows the
+sending mailbox’s owner (Full name, title, phone) when those fields are set on
+the mailbox in Mailcow admin.
 
-Status: **live** on `mail.ticketfasta.co.tz`.
+Status: branding ready for `mail.supertechltd.co.tz` (deploy with the scripts below).
 
 ## Files
 
@@ -38,7 +38,7 @@ Source of truth is the **Mailcow mailbox**:
    - `phone` — e.g. `+255629288966`
 3. Save. The next message sent from that address uses these details in the footer.
 
-If title and phone are both missing (or the lookup fails), the footer falls back to the generic company contact (`info@teratech.co.tz` + HQ phones).
+If title and phone are both missing (or the lookup fails), the footer falls back to the generic company contact (`info@supertechltd.co.tz` + `0784 777 711`).
 
 ### Helper script
 
@@ -49,10 +49,10 @@ If title and phone are both missing (or the lookup fails), the footer falls back
 ### Seed existing mailboxes
 
 ```bash
-./scripts/set-mailbox-owner.sh info@ticketfasta.co.tz \
+./scripts/set-mailbox-owner.sh info@supertechltd.co.tz \
   "Barakael Lucas" "Head of Software Department" "+255629288966"
 
-./scripts/set-mailbox-owner.sh support@ticketfasta.co.tz \
+./scripts/set-mailbox-owner.sh support@supertechltd.co.tz \
   "Marcelina Nki" "Business Analyst" "0770497383"
 ```
 
@@ -61,8 +61,8 @@ If title and phone are both missing (or the lookup fails), the footer falls back
 - Single horizontal row up to 720px on desktop (≥481px), four columns: brand block, HQ, contact, badge + copyright
 - On mobile (≤480px): sections stack vertically; copyright moves to a dedicated bottom row
 - Contact column: owner name + title (when set), mailbox address, phone(s)
-- Colors: navy `#183b63`, accent red `#DC143C`, white text
-- Logo: hosted over HTTPS at `https://mail.ticketfasta.co.tz/img/tera-logo.png`;
+- Colors: navy `#002E5D`, accent maroon `#7B1113`, white text
+- Logo: hosted over HTTPS at `https://mail.supertechltd.co.tz/img/supertech-logo.png`;
   it is not attached to the message
 
 ## How it works (DKIM-safe pipeline)
@@ -80,10 +80,10 @@ Key facts:
 - Submission services have `-o smtpd_milters=` so DKIM is not applied on the first pass.
 - `footer-filter.py` reinjects with `MAIL_CONFIG=/etc/postfix`.
 - The filter reads `footer-api.env` and calls `GET /api/v1/get/mailbox/<sender>` for Full name + custom attributes.
-- The deployment script publishes `tera-logo.png` to Mailcow's public web
+- The deployment script publishes `supertech-logo.png` to Mailcow's public web
   directory. Email clients fetch it through HTTPS instead of showing it as an
   attachment.
-- Loop guard: `X-Corporate-Footer: TERA`; skips bulk/list/auto-submitted mail.
+- Loop guard: `X-Corporate-Footer: SuperTech`; skips bulk/list/auto-submitted mail.
 - On any error the original message is reinjected unchanged.
 
 ## Local preview
@@ -118,7 +118,7 @@ Lands in `/opt/mailcow-dockerized/data/conf/postfix/disclaimer/`
 Add the pipe service (end of `data/conf/postfix/master.cf`):
 
 ```
-# TERA corporate footer content filter (DKIM-safe: runs before signing)
+# SuperTech corporate footer content filter (DKIM-safe: runs before signing)
 footerfilter unix - n n - - pipe
   flags=Rq user=nobody null_sender=
   argv=/opt/postfix/conf/disclaimer/footer-filter.py -f ${sender} -- ${recipient}
@@ -150,7 +150,7 @@ docker compose exec postfix-mailcow postfix reload
 ## Test checklist
 
 - [x] Footer appended to HTML and plain-text parts
-- [x] `X-Corporate-Footer: TERA` present; loop guard prevents double-append
+- [x] `X-Corporate-Footer: SuperTech` present; loop guard prevents double-append
 - [x] Attachments preserved intact
 - [x] Message delivered (`status=sent ... delivered via footerfilter service`)
 - [ ] Owner contact shows for mailboxes with `title` / `phone` custom attributes
@@ -162,7 +162,7 @@ docker compose exec postfix-mailcow postfix reload
 ```bash
 cd /opt/mailcow-dockerized
 docker compose exec dovecot-mailcow \
-  doveadm fetch -u info@ticketfasta.co.tz text \
+  doveadm fetch -u info@supertechltd.co.tz text \
   mailbox INBOX HEADER SUBJECT <your-subject>
 ```
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Set mailbox Full name + custom attributes title/phone for the TERA email footer.
+# Set mailbox Full name + custom attributes title/phone for the SuperTech email footer.
 #
 # Usage (from your Mac — runs on the live mail server via SSH):
 #   ./scripts/set-mailbox-owner.sh EMAIL "Full Name" "Title" "Phone"
 #
 # Example:
-#   ./scripts/set-mailbox-owner.sh info@ticketfasta.co.tz \
+#   ./scripts/set-mailbox-owner.sh info@supertechltd.co.tz \
 #     "Barakael Lucas" "Head of Software Department" "+255629288966"
 #
 # Requires /root/mailcow-credentials.txt on the server (API_KEY=...).

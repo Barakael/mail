@@ -1,46 +1,46 @@
-# Mailbox setup — info@ticketfasta.co.tz
+# Mailbox setup — info@supertechltd.co.tz
 
 ## Webmail
 
-1. Open https://mail.ticketfasta.co.tz/
+1. Open https://mail.supertechltd.co.tz/
 2. Log in with:
-   - **Email:** `info@ticketfasta.co.tz`
+   - **Email:** `info@supertechltd.co.tz`
    - **Password:** (set in Mailcow admin — see [OPERATIONS.md](OPERATIONS.md))
-3. Or go directly to https://mail.ticketfasta.co.tz/SOGo after login
+3. Or go directly to https://mail.supertechltd.co.tz/SOGo after login
 
 ## Mail client settings
 
 | Setting | Value |
 |---------|-------|
 | **Incoming (IMAP)** | |
-| Server | `mail.ticketfasta.co.tz` |
+| Server | `mail.supertechltd.co.tz` |
 | Port | `993` |
 | Security | SSL/TLS |
 | **Outgoing (SMTP)** | |
-| Server | `mail.ticketfasta.co.tz` |
+| Server | `mail.supertechltd.co.tz` |
 | Port | `587` (STARTTLS) or `465` (SSL) |
 | Security | STARTTLS or SSL |
 | Authentication | Required (same as IMAP) |
-| **Username** | `info@ticketfasta.co.tz` (full address) |
+| **Username** | `info@supertechltd.co.tz` (full address) |
 | **Password** | mailbox password |
 
-## DNS required for sending (ticketfasta.co.tz)
+## DNS required for sending (supertechltd.co.tz)
 
 Publish these at your DNS provider. Run `./scripts/verify-mail.sh` to check.
 
 | Type | Name | Value |
 |------|------|-------|
 | A | `mail` | `161.97.182.204` |
-| MX | `@` | `10 mail.ticketfasta.co.tz` |
-| TXT | `@` | `v=spf1 mx a:mail.ticketfasta.co.tz -all` |
+| MX | `@` | `10 mail.supertechltd.co.tz` |
+| TXT | `@` | `v=spf1 mx a:mail.supertechltd.co.tz -all` |
 | TXT | `dkim._domainkey` | See Mailcow: Configuration → Configuration & Details → ARC/DKIM keys |
-| TXT | `_dmarc` | `v=DMARC1; p=quarantine; rua=mailto:dmarc@ticketfasta.co.tz` |
+| TXT | `_dmarc` | `v=DMARC1; p=quarantine; rua=mailto:dmarc@supertechltd.co.tz` |
 
-**Reverse DNS (Contabo):** PTR for `161.97.182.204` must be `mail.ticketfasta.co.tz` (not the default Contabo hostname).
+**Reverse DNS (Contabo):** PTR for `161.97.182.204` must be `mail.supertechltd.co.tz` (not the default Contabo hostname).
 
 ## Deliverability test
 
-1. Log into SOGo as `info@ticketfasta.co.tz`
+1. Log into SOGo as `info@supertechltd.co.tz`
 2. Send a message to an external address (e.g. Gmail)
 3. Optional: use https://www.mail-tester.com — aim for 9+/10
 
