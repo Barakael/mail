@@ -53,7 +53,8 @@ LOGO_B64=$(base64 -w0 data/conf/sogo/custom-fulllogo.svg)
 docker compose exec -T redis-mailcow redis-cli -a "$REDIS_PASS" SET MAIN_LOGO "data:image/svg+xml;base64,${LOGO_B64}" >/dev/null
 docker compose exec -T redis-mailcow redis-cli -a "$REDIS_PASS" SET MAIN_LOGO_DARK "data:image/svg+xml;base64,${LOGO_B64}" >/dev/null
 PAYLOAD=$(python3 -c "import json,os; print(json.dumps({'attr':{'title_name':os.environ['TITLE_NAME'],'main_name':os.environ['MAIN_NAME'],'apps_name':os.environ['APPS_NAME'],'ui_footer':os.environ['UI_FOOTER']}}))")
-curl -sk -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" -X POST https://127.0.0.1/api/v1/edit/ui_texts -d "$PAYLOAD" >/dev/null
+RESP=$(curl -sk -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" -X POST https://127.0.0.1/api/v1/edit/ui_texts -d "$PAYLOAD")
+echo "$RESP" | grep -q '"type":"success"' || { echo "ERROR: ui_texts update failed: $RESP" >&2; exit 1; }
 docker compose restart memcached-mailcow php-fpm-mailcow nginx-mailcow sogo-mailcow
 REMOTE
 echo "==> Deployed to https://mail.supertechltd.co.tz"
